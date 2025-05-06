@@ -487,11 +487,12 @@
 		let fakeProgress = 0;
 
 		const updateProgressText = (value) => {
+			const clampedValue = Math.min(100, value); // evita que supere 100
 			const progressText = document.getElementById('loadingProgress');
-			progressText.textContent = `Cargando: ${value}%`;
+			progressText.textContent = `Cargando: ${clampedValue}%`;
 
 			const bar = document.getElementById('loadingBar');
-			bar.style.transform = `scaleX(${value / 100})`;
+			bar.style.transform = `scaleX(${clampedValue / 100})`;
 		};
 
 		loader.load(
@@ -516,15 +517,15 @@
 				let progress = 90;
 				const interval = setInterval(() => {
 					progress++;
-					updateProgressText(progress);
 					if (progress >= 100) {
+						progress = 100;
 						clearInterval(interval);
-						const progressText = document.getElementById('loadingProgress');
-						progressText.textContent = '¡Listo!';
+						document.getElementById('loadingProgress').textContent = '¡Listo!';
 						document.getElementById('startButton').style.display = 'block';
 						document.getElementById('instructionsButton').style.display = 'block';
 					}
-				}, 50); // velocidad de conteo artificial
+					updateProgressText(progress);
+				}, 50);
 			},
 
 			(xhr) => {
