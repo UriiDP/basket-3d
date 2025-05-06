@@ -186,7 +186,7 @@
 
 		const worldOctree = new Octree();
 
-		const playerCollider = new Capsule(new THREE.Vector3(0, 1.75, 0), new THREE.Vector3(0, 5, 0), 1.75);
+		const playerCollider = new Capsule(new THREE.Vector3(0, 1.75, 0), new THREE.Vector3(0, 8, 0), 1.75);
 
 		const playerVelocity = new THREE.Vector3();
 		const playerDirection = new THREE.Vector3();
@@ -484,52 +484,63 @@
 		}
 
 		const loader = new GLTFLoader().setPath('./models/gltf/');
+		let fakeProgress = 0;
 
-		setTimeout(() => {
-			document.getElementById('loadingScreen').style.display = 'flex';
-			document.getElementById('startButton').style.display = 'block';
-		}, 1000);
+		const updateProgressText = (value) => {
+			const progressText = document.getElementById('loadingProgress');
+			progressText.textContent = `Cargando: ${value}%`;
 
-		loader.load('basketball_court.glb', (gltf) => {
-			gltf.scene.scale.set(7, 7, 7); // ⬅ Escala al doble (ajusta valores según necesites)
+			const bar = document.getElementById('loadingBar');
+			bar.style.transform = `scaleX(${value / 100})`;
+		};
 
-			scene.add(gltf.scene);
+		loader.load(
+			'basketball_court.glb',
+			(gltf) => {
+				// Procesamiento del modelo completado
+				gltf.scene.scale.set(7, 7, 7);
+				scene.add(gltf.scene);
+				worldOctree.fromGraphNode(gltf.scene);
 
-			worldOctree.fromGraphNode(gltf.scene);
-
-			gltf.scene.traverse(child => {
-
-				if (child.isMesh) {
-
-					child.castShadow = true;
-					child.receiveShadow = true;
-
-					if (child.material.map) {
-
-						child.material.map.anisotropy = 4;
-
+				gltf.scene.traverse(child => {
+					if (child.isMesh) {
+						child.castShadow = true;
+						child.receiveShadow = true;
+						if (child.material.map) {
+							child.material.map.anisotropy = 4;
+						}
 					}
-
-				}
-
-			});
-
-			const helper = new OctreeHelper(worldOctree);
-			helper.visible = false;
-			scene.add(helper);
-
-			const gui = new GUI({ width: 200 });
-			gui.add({ debug: false }, 'debug')
-				.onChange(function (value) {
-
-					helper.visible = value;
-
 				});
 
-		});
+				// Simula carga lenta desde 90% hasta 100%
+				let progress = 90;
+				const interval = setInterval(() => {
+					progress++;
+					updateProgressText(progress);
+					if (progress >= 100) {
+						clearInterval(interval);
+						const progressText = document.getElementById('loadingProgress');
+						progressText.textContent = '¡Listo!';
+						document.getElementById('startButton').style.display = 'block';
+						document.getElementById('instructionsButton').style.display = 'block';
+					}
+				}, 50); // velocidad de conteo artificial
+			},
 
+			(xhr) => {
+				if (xhr.lengthComputable) {
+					const percent = Math.floor((xhr.loaded / xhr.total) * 90); // Limita a 90%
+					if (percent > fakeProgress) {
+						fakeProgress = percent;
+						updateProgressText(fakeProgress);
+					}
+				}
+			},
 
-
+			(error) => {
+				console.error('Error al cargar modelo:', error);
+			}
+		);
 
 
 		function teleportPlayerIfOob() {
@@ -611,11 +622,31 @@
 		}
 
 		document.getElementById('startButton').addEventListener('click', () => {
-			document.getElementById('loadingScreen').remove();
-			startBackgroundMusic(); // Inicia la música desde el botón también
+			// 1. Oculta la pantalla de carga completa
+			document.getElementById('loadingScreen').style.display = 'none';
+
+			// 2. Inicia la música si no ha empezado
+			startBackgroundMusic();
+
+			// 3. Inicia el bucle de animación del juego
 			renderer.setAnimationLoop(animate);
 		});
 
+		document.getElementById('instructionsButton').addEventListener('click', () => {
+			const text = `🏀 Bienvenido a Basketball 2025
+Usa las teclas W, A, S y D para moverte, espacio para saltar y el mouse para mirar.
+Haz click derecho/izquierdo para lanzar el balón.
+
+Anota en cualquiera de las canastas para ganar puntos.
+✔️ Tiros cercanos = 1 punto
+✔️ Medios = 2 puntos
+✔️ Lejanos = 3 puntos
+
+¡Aprovecha cada lanzamiento, apunta con precisión y conviértete en leyenda!`;
+
+			document.getElementById('instructionsText').textContent = text;
+			document.getElementById('instructionsModal').style.display = 'block';
+		});
 
 
 
@@ -632,7 +663,34 @@
 	align-items: center;
 	flex-direction: column;
 	z-index: 9999;
+	text-align: center;
 ">
+		<div id="loadingProgress" style="
+		color: white;
+		font-size: 32px;
+		text-shadow: 2px 2px 5px black;
+		margin-bottom: 20px;
+	">
+			Cargando: 0%
+		</div>
+		<div id="loadingBarContainer" style="
+		width: 300px;
+		height: 10px;
+		background-color: rgba(255, 255, 255, 0.3);
+		border-radius: 10px;
+		overflow: hidden;
+		margin-bottom: 20px;
+		box-shadow: 0 0 5px rgba(0,0,0,0.5);">
+			<div id="loadingBar" style="
+			height: 100%;
+			width: 100%;
+			background-color: #28a745;
+			transform-origin: left;
+			transform: scaleX(0);
+			transition: transform 0.3s ease;">
+			</div>
+		</div>
+
 		<button id="startButton" style="
 		display: none;
 		padding: 15px 30px;
@@ -646,7 +704,54 @@
 	">
 			Jugar ahora
 		</button>
+		<button id="instructionsButton" style="
+		display: none;
+		padding: 10px 25px;
+		font-size: 20px;
+		border: none;
+		border-radius: 10px;
+		cursor: pointer;
+		background-color: #007bff;
+		color: white;
+		box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+		margin-top: 10px;
+		">
+			Instrucciones
+		</button>
+
 	</div>
+
+	<div id="instructionsModal" style="
+		display: none;
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		background-color: rgba(0,0,0,0.9);
+		color: white;
+		padding: 20px;
+		border-radius: 15px;
+		max-width: 600px;
+		width: 90%;
+		box-shadow: 0 0 15px rgba(0,0,0,0.7);
+		z-index: 10000;
+		text-align: left;
+		font-size: 18px;
+		white-space: pre-line;
+">
+		<p id="instructionsText"></p>
+		<button onclick="document.getElementById('instructionsModal').style.display = 'none'" style="
+		margin-top: 20px;
+		background: #dc3545;
+		color: white;
+		border: none;
+		padding: 10px 20px;
+		border-radius: 8px;
+		cursor: pointer;
+	">Cerrar</button>
+	</div>
+
+
 </body>
 
 </html>
