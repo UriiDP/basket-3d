@@ -24,13 +24,15 @@
 	<script type="importmap">
 			{
 				"imports": {
-					"three": "../build/three.module.js",
-					"three/addons/": "./jsm/"
+					"three": "https://unpkg.com/three@0.160.1/build/three.module.js",
+  					"three/addons/": "https://unpkg.com/three@0.160.1/examples/jsm/"
 				}
 			}
 		</script>
 
 	<script type="module">
+
+		import { VRButton } from 'three/addons/webxr/VRButton.js';
 
 		import * as THREE from 'three';
 
@@ -116,13 +118,14 @@
 		const container = document.getElementById('container');
 
 		const renderer = new THREE.WebGLRenderer({ antialias: true });
+		renderer.xr.enabled = true;
 		renderer.setPixelRatio(window.devicePixelRatio);
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		renderer.shadowMap.enabled = true;
 		renderer.shadowMap.type = THREE.VSMShadowMap;
 		renderer.toneMapping = THREE.ACESFilmicToneMapping;
 		container.appendChild(renderer.domElement);
-
+		document.body.appendChild(VRButton.createButton(renderer));
 		const stats = new Stats();
 		stats.domElement.style.position = 'absolute';
 		stats.domElement.style.top = '0px';
@@ -186,7 +189,7 @@
 
 		const worldOctree = new Octree();
 
-		const playerCollider = new Capsule(new THREE.Vector3(0, 1.75, 0), new THREE.Vector3(0, 8, 0), 1.75);
+		const playerCollider = new Capsule(new THREE.Vector3(0, 1.75, 0), new THREE.Vector3(0, 12, 0), 1.75);
 
 		const playerVelocity = new THREE.Vector3();
 		const playerDirection = new THREE.Vector3();
@@ -517,15 +520,22 @@
 				let progress = 90;
 				const interval = setInterval(() => {
 					progress++;
+
 					if (progress >= 100) {
-						progress = 100;
 						clearInterval(interval);
+
+						// Mostrar texto "¡Listo!" de forma manual
 						document.getElementById('loadingProgress').textContent = '¡Listo!';
 						document.getElementById('startButton').style.display = 'block';
 						document.getElementById('instructionsButton').style.display = 'block';
+
+						// Asegura que la barra esté llena visualmente
+						document.getElementById('loadingBar').style.transform = 'scaleX(1)';
+					} else {
+						updateProgressText(progress);
 					}
-					updateProgressText(progress);
 				}, 50);
+
 			},
 
 			(xhr) => {
