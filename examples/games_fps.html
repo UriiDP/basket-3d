@@ -126,6 +126,12 @@
 		renderer.toneMapping = THREE.ACESFilmicToneMapping;
 		container.appendChild(renderer.domElement);
 		document.body.appendChild(VRButton.createButton(renderer));
+		const controller = renderer.xr.getController(0);
+		scene.add(controller);
+
+		controller.addEventListener('selectstart', () => {
+			if (basketballModel) throwBall();
+		});
 		const stats = new Stats();
 		stats.domElement.style.position = 'absolute';
 		stats.domElement.style.top = '0px';
@@ -313,7 +319,9 @@
 
 			playerCollisions();
 
-			camera.position.copy(playerCollider.end);
+			if (!renderer.xr.isPresenting) {
+				camera.position.copy(playerCollider.end);
+			}
 
 		}
 
