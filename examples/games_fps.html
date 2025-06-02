@@ -98,19 +98,19 @@
 		fillLight1.position.set(2, 1, 1);
 		scene.add(fillLight1);
 
-		const directionalLight = new THREE.DirectionalLight(0xffffff, 3.5);
-		directionalLight.position.set(- 5, 25, - 1);
-		directionalLight.castShadow = true;
-		directionalLight.shadow.camera.near = 0.01;
-		directionalLight.shadow.camera.far = 500;
-		directionalLight.shadow.camera.right = 30;
-		directionalLight.shadow.camera.left = - 30;
-		directionalLight.shadow.camera.top = 30;
-		directionalLight.shadow.camera.bottom = - 30;
-		directionalLight.shadow.mapSize.width = 1024;
-		directionalLight.shadow.mapSize.height = 1024;
-		directionalLight.shadow.radius = 4;
-		directionalLight.shadow.bias = - 0.00006;
+		//const directionalLight = new THREE.DirectionalLight(0xffffff, 3.5);
+		//directionalLight.position.set(- 5, 25, - 1);
+		//directionalLight.castShadow = true;
+		//directionalLight.shadow.camera.near = 0.01;
+		//directionalLight.shadow.camera.far = 500;
+		//directionalLight.shadow.camera.right = 30;
+		//directionalLight.shadow.camera.left = - 30;
+		//directionalLight.shadow.camera.top = 30;
+		//directionalLight.shadow.camera.bottom = - 30;
+		//directionalLight.shadow.mapSize.width = 1024;
+		//directionalLight.shadow.mapSize.height = 1024;
+		//directionalLight.shadow.radius = 4;
+		//directionalLight.shadow.bias = - 0.00006;
 		scene.add(directionalLight);
 		// Luz ambiental suave para mejorar visibilidad general
 		const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -123,8 +123,8 @@
 		renderer.xr.enabled = true;
 		renderer.setPixelRatio(window.devicePixelRatio);
 		renderer.setSize(window.innerWidth, window.innerHeight);
-		renderer.shadowMap.enabled = true;
-		renderer.shadowMap.type = THREE.VSMShadowMap;
+		//renderer.shadowMap.enabled = true;
+		//renderer.shadowMap.type = THREE.VSMShadowMap;
 		renderer.toneMapping = THREE.ACESFilmicToneMapping;
 		container.appendChild(renderer.domElement);
 		document.body.appendChild(VRButton.createButton(renderer));
@@ -141,7 +141,7 @@
 
 		const GRAVITY = 30;
 
-		const NUM_SPHERES = 100;
+		const NUM_SPHERES = 25;
 		const SPHERE_RADIUS = 0.499;
 
 		const STEPS_PER_FRAME = 5;
@@ -156,44 +156,6 @@
 		let sphereIdx = 0;
 
 		let basketballModel = null;
-
-		const loaderBall = new GLTFLoader().setPath('./models/gltf/');
-		loaderBall.load('basketball_ball.glb', (gltf) => {
-			basketballModel = gltf.scene;
-
-			for (let i = 0; i < NUM_SPHERES; i++) {
-				const modelClone = basketballModel.clone();
-				modelClone.scale.set(0.01, 0.01, 0.01); // Ajusta según tu modelo
-				modelClone.traverse((child) => {
-					if (child.isMesh) {
-						child.castShadow = true;
-						child.receiveShadow = true;
-					}
-				});
-
-				scene.add(modelClone);
-
-				spheres.push({
-					mesh: modelClone,
-					collider: new THREE.Sphere(new THREE.Vector3(0, -100, 0), SPHERE_RADIUS),
-					velocity: new THREE.Vector3(),
-					previousY: -Infinity
-
-				});
-			}
-		});
-
-		const loaderHands = new GLTFLoader().setPath('./models/gltf/');
-		loaderHands.load('hands_ball.glb', (gltf) => {
-			const hands = gltf.scene;
-			console.log('Modelo de manos cargado:', hands); //Verificar en consola si se cargó el modelo
-			hands.scale.set(20, 20, 20); // Ajusta según tu modelo
-			hands.position.set(0, -2.5, -5); // Ajusta posición frente a cámara
-			hands.rotation.set(0, Math.PI, 0);
-			camera.add(hands); // 👈 Esto hace que las manos se muevan con la cámara
-		});
-
-
 
 		const worldOctree = new Octree();
 
@@ -652,6 +614,42 @@
 
 			// 2. Inicia la música si no ha empezado
 			startBackgroundMusic();
+
+			const loaderBall = new GLTFLoader().setPath('./models/gltf/');
+			loaderBall.load('basketball_ball.glb', (gltf) => {
+				basketballModel = gltf.scene;
+
+				for (let i = 0; i < NUM_SPHERES; i++) {
+					const modelClone = basketballModel.clone();
+					modelClone.scale.set(0.01, 0.01, 0.01); // Ajusta según tu modelo
+					modelClone.traverse((child) => {
+						if (child.isMesh) {
+							child.castShadow = true;
+							child.receiveShadow = true;
+						}
+					});
+
+					scene.add(modelClone);
+
+					spheres.push({
+						mesh: modelClone,
+						collider: new THREE.Sphere(new THREE.Vector3(0, -100, 0), SPHERE_RADIUS),
+						velocity: new THREE.Vector3(),
+						previousY: -Infinity
+
+					});
+				}
+			});
+
+			const loaderHands = new GLTFLoader().setPath('./models/gltf/');
+			loaderHands.load('hands_ball.glb', (gltf) => {
+				const hands = gltf.scene;
+				console.log('Modelo de manos cargado:', hands); //Verificar en consola si se cargó el modelo
+				hands.scale.set(20, 20, 20); // Ajusta según tu modelo
+				hands.position.set(0, -2.5, -5); // Ajusta posición frente a cámara
+				hands.rotation.set(0, Math.PI, 0);
+				camera.add(hands); // 👈 Esto hace que las manos se muevan con la cámara
+			});
 
 			// 3. Inicia el bucle de animación del juego
 			renderer.setAnimationLoop(animate);
