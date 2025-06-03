@@ -121,7 +121,8 @@
 
 		const renderer = new THREE.WebGLRenderer({ antialias: true });
 		renderer.xr.enabled = true;
-		renderer.setPixelRatio(window.devicePixelRatio);
+		//renderer.setPixelRatio(window.devicePixelRatio);
+		renderer.setPixelRatio(1); // Sustituye el window.devicePixelRatio
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		//renderer.shadowMap.enabled = true;
 		//renderer.shadowMap.type = THREE.VSMShadowMap;
@@ -496,24 +497,19 @@
 				let progress = 90;
 				const interval = setInterval(() => {
 					progress++;
-
 					if (progress >= 100) {
 						clearInterval(interval);
-
-						// Mostrar texto "¡Listo!" de forma manual
 						document.getElementById('loadingProgress').textContent = '¡Listo!';
 						document.getElementById('startButton').style.display = 'block';
 						document.getElementById('instructionsButton').style.display = 'block';
-
-						// Asegura que la barra esté llena visualmente
 						document.getElementById('loadingBar').style.transform = 'scaleX(1)';
 					} else {
 						updateProgressText(progress);
 					}
 				}, 50);
-
 			},
 
+			// Progreso real de carga
 			(xhr) => {
 				if (xhr.lengthComputable) {
 					const percent = Math.floor((xhr.loaded / xhr.total) * 90); // Limita a 90%
@@ -524,10 +520,12 @@
 				}
 			},
 
+			// Manejador de errores
 			(error) => {
 				console.error('Error al cargar modelo:', error);
 			}
 		);
+
 
 
 		function teleportPlayerIfOob() {
@@ -639,16 +637,6 @@
 
 					});
 				}
-			});
-
-			const loaderHands = new GLTFLoader().setPath('./models/gltf/');
-			loaderHands.load('hands_ball.glb', (gltf) => {
-				const hands = gltf.scene;
-				console.log('Modelo de manos cargado:', hands); //Verificar en consola si se cargó el modelo
-				hands.scale.set(20, 20, 20); // Ajusta según tu modelo
-				hands.position.set(0, -2.5, -5); // Ajusta posición frente a cámara
-				hands.rotation.set(0, Math.PI, 0);
-				camera.add(hands); // 👈 Esto hace que las manos se muevan con la cámara
 			});
 
 			// 3. Inicia el bucle de animación del juego
