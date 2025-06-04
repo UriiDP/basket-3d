@@ -502,6 +502,16 @@
 						document.getElementById('startButton').style.display = 'block';
 						document.getElementById('instructionsButton').style.display = 'block';
 						document.getElementById('loadingBar').style.transform = 'scaleX(1)';
+
+						// AUTOINICIO EN VR si no se puede presionar el botón
+						if (navigator.xr && renderer.xr.isPresenting) {
+							setTimeout(() => {
+								document.getElementById('loadingScreen').style.display = 'none';
+								startBackgroundMusic();
+								renderer.setAnimationLoop(animate);
+							}, 1000);
+						}
+
 					} else {
 						updateProgressText(progress);
 					}
