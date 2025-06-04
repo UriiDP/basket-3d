@@ -41,6 +41,8 @@
 
 		import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 		import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+		import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
+		import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 		import { Octree } from 'three/addons/math/Octree.js';
 		import { OctreeHelper } from 'three/addons/helpers/OctreeHelper.js';
 
@@ -461,8 +463,14 @@
 		const dracoLoader = new DRACOLoader();
 		dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/'); // o ruta local
 
+		const ktx2Loader = new KTX2Loader()
+			.setTranscoderPath('https://unpkg.com/three@0.160.1/examples/jsm/libs/basis/') // Ruta a transcoder
+			.detectSupport(renderer);
+
 		const loader = new GLTFLoader().setPath('./models/gltf/');
 		loader.setDRACOLoader(dracoLoader);
+		loader.setKTX2Loader(ktx2Loader);
+		loader.setMeshoptDecoder(MeshoptDecoder);
 		let fakeProgress = 0;
 
 		const updateProgressText = (value) => {
@@ -477,6 +485,7 @@
 		loader.load(
 			'basketball_court.glb',
 			(gltf) => {
+				console.log('✅ Modelo basketball_court.glb cargado correctamente');
 				// Procesamiento del modelo completado
 				gltf.scene.scale.set(7, 7, 7);
 				scene.add(gltf.scene);
